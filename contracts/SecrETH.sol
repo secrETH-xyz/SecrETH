@@ -7,19 +7,19 @@ contract SecrETH {
     // public key of our contract
     bytes32 private pubKey;
 
-    uint32 public threshold = 67;
+    uint32 private threshold;
 
-    uint32 public numSigners = 100;
+    uint32 private numSigners;
 
-    uint32 public blocksDelay = 100;
+    uint32 private blocksDelay;
 
-    uint32 generalFee = 10000;
+    uint32 private generalFee;
 
     struct CipherInfo {
         address cipherOwner; // address that registered cipher
         uint256 decryptionInitBlock; // block number when decryption was called
-        address[] decryptionSigners; // signers that already provided their fractional decryption
-        bytes32[] fractionalDecryptions; // indexes correspond to index of signer that provied fractional decryption
+        address[] decryptionSigners; // signers that already provided their partial decryption
+        bytes32[] partialDecryptions; // indexes correspond to index of signer that provied partial decryption
         bool storeDecryption; // should final decryption of cipher be stored on change
         string decryptedCipher;
         uint256 decryptionStorageFee;
@@ -29,7 +29,7 @@ contract SecrETH {
     mapping(address => bool) public isSigner;
 
     // new_signer_public_key --> [shares_to_generate_new_signers_share_encrypted_with_their_public_key]
-    mapping(bytes32 => bytes32[]) public shareGenerationFractions;
+    mapping(bytes32 => bytes32[]) public shareGenerationPartialSignatures;
 
     // stores all registered ciphers and information about them
     mapping(string => CipherInfo) public allCiphers;
@@ -38,6 +38,16 @@ contract SecrETH {
     event DecryptionReady(string cipher);
     event DecryptionReadyIncentivized(string cipher, uint256 storageFee);
     event JoinNetworkRequest(bytes32 newSignerPubKey);
+
+    constructor(address[] memory initialSigners, bytes32 _pubKey, uint32 _threshold, uint32 _numSigners, uint32 _blocksDelay, uint32 _generalFee) {
+        for (uint i = 0; i < initialSigners.length; i++){
+            isSigner[initialSigners[i]] = true;
+        }
+        pubKey = _pubKey;
+        threshold = _threshold;
+        numSigners = _numSigners;
+        blocksDelay = _blocksDelay;
+    }
 
     function register(string calldata cipher) payable public {
         require (allCiphers[cipher].cipherOwner == address(0), "This ciphertext is already registered. Try using another salt.");
@@ -56,21 +66,21 @@ contract SecrETH {
         }
     }
 
-    function submitFractionalDecryption (string calldata cipher, bytes32 fractionalDecryption) public {
+    function submitPartialDecryption (string calldata cipher, bytes32 partialDecryption) public {
         require (isSigner[msg.sender], "This address is not a secrETH signer.");
-        require (block.number <= allCiphers[cipher].decryptionInitBlock + blocksDelay, "The time to submit a fractional decryption has passed.");
+        require (block.number <= allCiphers[cipher].decryptionInitBlock + blocksDelay, "The time to submit a partial decryption has passed.");
         for (uint i = 0; i < allCiphers[cipher].decryptionSigners.length; i++) {
-            require (allCiphers[cipher].decryptionSigners[i] != msg.sender, "This address aleready provided their fractional decryption.");
+            require (allCiphers[cipher].decryptionSigners[i] != msg.sender, "This address aleready provided their partial decryption.");
         }
 
         payable(msg.sender).transfer(generalFee / numSigners);
 
-        // TODO P5: implement ZK to require fractionalDecryption is a valid decryption
+        // TODO P5: implement ZK to require partialDecryption is a valid decryption
 
-        allCiphers[cipher].fractionalDecryptions.push(fractionalDecryption);
+        allCiphers[cipher].partialDecryptions.push(partialDecryption);
         allCiphers[cipher].decryptionSigners.push(msg.sender);
 
-        if (allCiphers[cipher].fractionalDecryptions.length >= threshold) {
+        if (allCiphers[cipher].partialDecryptions.length >= threshold) {
             if (!allCiphers[cipher].storeDecryption) {
                 emit DecryptionReady(cipher);
             }
@@ -98,10 +108,26 @@ contract SecrETH {
     }
 
     function submitShare(bytes32 newSignerPubKey, bytes32 share) public {
-        shareGenerationFractions[newSignerPubKey].push(share);
+        shareGenerationPartialSignatures[newSignerPubKey].push(share);
     }
 
     function getPubKey() public view returns (bytes32) {
         return pubKey;
+    }
+
+    function getThreshold() public view returns (uint32) {
+        return threshold;
+    }
+
+    function getNumSigners() public view returns (uint32) {
+        return numSigners;
+    }
+
+    function getBlocksDelay() public view returns (uint32) {
+        return blocksDelay;
+    }
+
+    function getGeneralFee() public view returns (uint32) {
+        return generalFee;
     }
 }
