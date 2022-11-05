@@ -7,9 +7,13 @@ contract SecrETH {
     // public key of our contract
     bytes32 private pubKey;
 
-    uint public threshold = 67;
+    uint32 public threshold = 67;
 
-    uint public blocksDelay = 100;
+    uint32 public numSigners = 100;
+
+    uint32 public blocksDelay = 100;
+
+    uint32 generalFee = 10000;
 
     struct CipherInfo {
         address cipherOwner; // address that registered cipher
@@ -18,6 +22,7 @@ contract SecrETH {
         bytes32[] fractionalDecryptions; // indexes correspond to index of signer that provied fractional decryption
         bool storeDecryption; // should final decryption of cipher be stored on change
         string decryptedCipher;
+        uint256 decryptionStorageFee;
 
     }
 
@@ -32,22 +37,22 @@ contract SecrETH {
 
     event DecryptionCalled(bytes32 cipher, bool shouldStoreDecryption);
     event DecryptionReady(bytes32 cipher);
-    event DecryptionReadyIncentivized(bytes32 cipher);
+    event DecryptionReadyIncentivized(bytes32 cipher, uint256 storageFee);
     event JoinNetworkRequest(bytes32 newSignerPubKey);
 
-    function register(bytes32 cipher) public {
+    function register(bytes32 cipher) payable public {
         require (allCiphers[cipher].cipherOwner == address(0), "This ciphertext is already registered. Try using another salt.");
-        // TODO P2: charge fee to msg.sender
-        // Enote: do we have to initialize struct here?
+        require (msg.value >= generalFee);
         allCiphers[cipher].cipherOwner = msg.sender;
     }
 
-    function decrypt(bytes32 cipher, bool shouldStoreDecryption) public {
+    function decrypt(bytes32 cipher, bool shouldStoreDecryption) payable public {
         require (allCiphers[cipher].cipherOwner == msg.sender, "This address is not allowed to decrypt this ciphertext.");
         emit DecryptionCalled(cipher, shouldStoreDecryption);
         allCiphers[cipher].decryptionInitBlock = block.number;
 
         if (shouldStoreDecryption) {
+            allCiphers[cipher].decryptionStorageFee = msg.value;
             allCiphers[cipher].storeDecryption = true;
         }
     }
@@ -59,7 +64,7 @@ contract SecrETH {
             require (allCiphers[cipher].decryptionSigners[i] != msg.sender, "This address aleready provided their fractional decryption.");
         }
 
-        // TODO P2: pay fee to msg.sender
+        payable(msg.sender).transfer(generalFee / numSigners);
 
         // TODO P5: implement ZK to require fractionalDecryption is a valid decryption
 
@@ -71,7 +76,7 @@ contract SecrETH {
                 emit DecryptionReady(cipher);
             }
             else {
-                emit DecryptionReadyIncentivized(cipher);
+                emit DecryptionReadyIncentivized(cipher, allCiphers[cipher].decryptionStorageFee);
             }
         }
     }
@@ -83,7 +88,7 @@ contract SecrETH {
         allCiphers[cipher].decryptedCipher = decryptedCipher;
 
         if (allCiphers[cipher].storeDecryption) {
-            // TODO P2: pay fee to msg.sender
+            payable(msg.sender).transfer(allCiphers[cipher].decryptionStorageFee);
         }
     }
 
