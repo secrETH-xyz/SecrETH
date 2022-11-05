@@ -19,10 +19,16 @@ contract SecrETH {
         address cipherOwner; // address that registered cipher
         uint256 decryptionInitBlock; // block number when decryption was called
         address[] decryptionSigners; // signers that already provided their partial decryption
-        bytes32[] partialDecryptions; // indexes correspond to index of signer that provied partial decryption
+        PartialDecryption[] partialDecryptions; // indexes correspond to index of signer that provied partial decryption
         bool storeDecryption; // should final decryption of cipher be stored on change
         string decryptedCipher;
         uint256 decryptionStorageFee;
+    }
+
+    struct PartialDecryption {
+        string x;
+        string yC1_x;
+        string yC1_y;
     }
 
     // adress --> is_a_signer
@@ -67,7 +73,7 @@ contract SecrETH {
         }
     }
 
-    function submitPartialDecryption (string calldata cipher, bytes32 partialDecryption) public {
+    function submitPartialDecryption (string calldata cipher, string calldata partialDecryptionX, string calldata partialDecryptionC1_x, string calldata partialDecryptionC1_y) public {
         require (isSigner[msg.sender], "This address is not a secrETH signer.");
         require (block.number <= allCiphers[cipher].decryptionInitBlock + blocksDelay, "The time to submit a partial decryption has passed.");
         for (uint i = 0; i < allCiphers[cipher].decryptionSigners.length; i++) {
@@ -76,9 +82,12 @@ contract SecrETH {
 
         payable(msg.sender).transfer(generalFee / numSigners);
 
+        PartialDecryption memory newPartialDecryption;
+        newPartialDecryption = PartialDecryption(partialDecryptionX, partialDecryptionC1_x, partialDecryptionC1_y);
+
         // TODO P5: implement ZK to require partialDecryption is a valid decryption
 
-        allCiphers[cipher].partialDecryptions.push(partialDecryption);
+        allCiphers[cipher].partialDecryptions.push(newPartialDecryption);
         allCiphers[cipher].decryptionSigners.push(msg.sender);
 
         if (allCiphers[cipher].partialDecryptions.length >= threshold) {
