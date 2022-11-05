@@ -23,7 +23,6 @@ contract SecrETH {
         bool storeDecryption; // should final decryption of cipher be stored on change
         string decryptedCipher;
         uint256 decryptionStorageFee;
-
     }
 
     // adress --> is_a_signer
@@ -33,20 +32,20 @@ contract SecrETH {
     mapping(bytes32 => bytes32[]) public shareGenerationFractions;
 
     // stores all registered ciphers and information about them
-    mapping(bytes32 => CipherInfo) public allCiphers;
+    mapping(string => CipherInfo) public allCiphers;
 
-    event DecryptionCalled(bytes32 cipher, bool shouldStoreDecryption);
-    event DecryptionReady(bytes32 cipher);
-    event DecryptionReadyIncentivized(bytes32 cipher, uint256 storageFee);
+    event DecryptionCalled(string cipher, bool shouldStoreDecryption);
+    event DecryptionReady(string cipher);
+    event DecryptionReadyIncentivized(string cipher, uint256 storageFee);
     event JoinNetworkRequest(bytes32 newSignerPubKey);
 
-    function register(bytes32 cipher) payable public {
+    function register(string calldata cipher) payable public {
         require (allCiphers[cipher].cipherOwner == address(0), "This ciphertext is already registered. Try using another salt.");
         require (msg.value >= generalFee);
         allCiphers[cipher].cipherOwner = msg.sender;
     }
 
-    function decrypt(bytes32 cipher, bool shouldStoreDecryption) payable public {
+    function decrypt(string calldata cipher, bool shouldStoreDecryption) payable public {
         require (allCiphers[cipher].cipherOwner == msg.sender, "This address is not allowed to decrypt this ciphertext.");
         emit DecryptionCalled(cipher, shouldStoreDecryption);
         allCiphers[cipher].decryptionInitBlock = block.number;
@@ -57,7 +56,7 @@ contract SecrETH {
         }
     }
 
-    function submitFractionalDecryption (bytes32 cipher, bytes32 fractionalDecryption) public {
+    function submitFractionalDecryption (string calldata cipher, bytes32 fractionalDecryption) public {
         require (isSigner[msg.sender], "This address is not a secrETH signer.");
         require (block.number <= allCiphers[cipher].decryptionInitBlock + blocksDelay, "The time to submit a fractional decryption has passed.");
         for (uint i = 0; i < allCiphers[cipher].decryptionSigners.length; i++) {
@@ -81,7 +80,7 @@ contract SecrETH {
         }
     }
 
-    function submitDecryption (bytes32 cipher, string calldata decryptedCipher) public {
+    function submitDecryption (string calldata cipher, string calldata decryptedCipher) public {
         require (allCiphers[cipher].cipherOwner != address(0));
         // require encrypt(decryption, pubKey) == cipher
 
