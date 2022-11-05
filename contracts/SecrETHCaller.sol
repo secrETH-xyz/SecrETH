@@ -12,7 +12,7 @@ contract SecrETHCaller {
 
     SecrETH secrETH;
 
-    constructor(string memory _ourCipher, uint32 _locktime, address secrETHAddress) public {
+    constructor(string memory _ourCipher, uint32 _locktime, address secrETHAddress) {
         ourCipher = _ourCipher;
         locktime = _locktime;
         secrETH = SecrETH(secrETHAddress);
