@@ -47,6 +47,7 @@ contract SecrETH {
         threshold = _threshold;
         numSigners = _numSigners;
         blocksDelay = _blocksDelay;
+        generalFee = _generalFee;
     }
 
     function register(string calldata cipher) payable public {
