@@ -11,67 +11,63 @@ contract SecrETH {
 
     uint public blocksDelay = 100;
 
-    // ciphertext --> addresses_that_can_decrypt_cipher
-    mapping(bytes64 => address) public cipherOwner;
+    struct CipherInfo {
+        address cipherOwner; // address that registered cipher
+        uint256 decryptionInitBlock; // block number when decryption was called
+        address[] decryptionSigners; // signers that already provided their fractional decryption
+        bytes32[] fractionalDecryptions; // indexes correspond to index of signer that provied fractional decryption
+        bool storeDecryption; // should final decryption of cipher be stored on change
+        string decryptedCipher;
 
-    // ciphertext --> block_number_when_decryption_was_called
-    mapping(bytes64 => uint) public decryptionInitBlock;
+    }
 
     // adress --> is_a_signer
     mapping(address => bool) public isSigner;
 
-    // ciphertext -> [signers_that_already_signed]
-    mapping(bytes64 => address[]) decryptionParticipants;
-
-    // ciphertext --> [fractional_decryption_of_ciphertext]
-    mapping(bytes64 => bytes64[]) public fractionalDecryptions;
-
-    // ciphertext --> decryption_storage_was_requested
-    mapping(bytes64 => bool) public storeDecryption;
-
-    // ciphertext --> decryption_of_ciphertext
-    mapping(bytes64 => bytes64) public decryption;
-
     // new_signer_public_key --> [shares_to_generate_new_signers_share_encrypted_with_their_public_key]
-    mapping(bytes64 => bytes64[]) public shareGenerationFractions;
+    mapping(bytes32 => bytes32[]) public shareGenerationFractions;
 
-    event DecryptionCalled(bytes64 cipher, bool shouldStoreDecryption);
-    event DecryptionReady(bytes64 cipher);
-    event DecryptionReadyIncentivized(bytes64 cipher);
-    event JoinNetworkRequest(bytes64 newSignerPubKey);
+    // stores all registered ciphers and information about them
+    mapping(bytes32 => CipherInfo) public allCiphers;
 
-    function register(bytes64 cipher) {
-        require (cipherOwner[cipher] == address(0), "This ciphertext is already registered. Try using another salt.");
+    event DecryptionCalled(bytes32 cipher, bool shouldStoreDecryption);
+    event DecryptionReady(bytes32 cipher);
+    event DecryptionReadyIncentivized(bytes32 cipher);
+    event JoinNetworkRequest(bytes32 newSignerPubKey);
+
+    function register(bytes32 cipher) public {
+        require (allCiphers[cipher].cipherOwner == address(0), "This ciphertext is already registered. Try using another salt.");
         // TODO P2: charge fee to msg.sender
-        cipherOwner[cipher] = msg.sender;
+        // Enote: do we have to initialize struct here?
+        allCiphers[cipher].cipherOwner = msg.sender;
     }
 
-    function decrypt(bytes64 cipher, bool shouldStoreDecryption) {
-        require (cipherOwner[cipher] == msg.sender, "This address is not allowed to decrypt this ciphertext.");
+    function decrypt(bytes32 cipher, bool shouldStoreDecryption) public {
+        require (allCiphers[cipher].cipherOwner == msg.sender, "This address is not allowed to decrypt this ciphertext.");
         emit DecryptionCalled(cipher, shouldStoreDecryption);
-        decryptionInitBlock[cipher] = block.number;
+        allCiphers[cipher].decryptionInitBlock = block.number;
 
         if (shouldStoreDecryption) {
-            storeDecryption[cipher] = true;
+            allCiphers[cipher].storeDecryption = true;
         }
     }
 
-    function submitFractionalDecryption (bytes64 cipher, bytes64 fractionalDecryption) {
+    function submitFractionalDecryption (bytes32 cipher, bytes32 fractionalDecryption) public {
         require (isSigner[msg.sender], "This address is not a secrETH signer.");
-        require (block.number <= decryptionInitBlock[cipher] + blocksDelay, "The time to submit a fractional decryption has passed.");
-        for (int i = 0; i < decryptionParticipants[cipher].length; i++) {
-            require (decryptionParticipants[cipher][i] != msg.sender, "This address aleready provided their fractional decryption.")
+        require (block.number <= allCiphers[cipher].decryptionInitBlock + blocksDelay, "The time to submit a fractional decryption has passed.");
+        for (uint i = 0; i < allCiphers[cipher].decryptionSigners.length; i++) {
+            require (allCiphers[cipher].decryptionSigners[i] != msg.sender, "This address aleready provided their fractional decryption.");
         }
 
         // TODO P2: pay fee to msg.sender
 
         // TODO P5: implement ZK to require fractionalDecryption is a valid decryption
 
-        fractionalDecryptions[cipher].push(fractionalDecryption);
-        decryptionParticipants[cipher].push(msg.sender);
+        allCiphers[cipher].fractionalDecryptions.push(fractionalDecryption);
+        allCiphers[cipher].decryptionSigners.push(msg.sender);
 
-        if (fractionalDecryptions[cipher].length >= threshold) {
-            if (!storeDecryption[cipher]) {
+        if (allCiphers[cipher].fractionalDecryptions.length >= threshold) {
+            if (!allCiphers[cipher].storeDecryption) {
                 emit DecryptionReady(cipher);
             }
             else {
@@ -80,28 +76,28 @@ contract SecrETH {
         }
     }
 
-    function submitDecryption (bytes64 cipher, string decryptedCipher) {
-        require (cipherOwner[cipher] != address(0));
+    function submitDecryption (bytes32 cipher, string calldata decryptedCipher) public {
+        require (allCiphers[cipher].cipherOwner != address(0));
         // require encrypt(decryption, pubKey) == cipher
 
-        decryption[cipher] = decryptedCipher;
+        allCiphers[cipher].decryptedCipher = decryptedCipher;
 
-        if (storeDecryption[cipher]) {
+        if (allCiphers[cipher].storeDecryption) {
             // TODO P2: pay fee to msg.sender
         }
     }
 
     // Tell current signers to generate a new share of the secret key for msg.sender
-    function joinNetwork(bytes64 newSignerPubKey) {
+    function joinNetwork(bytes32 newSignerPubKey) public {
         // TODO P3: process stake
         emit JoinNetworkRequest(newSignerPubKey);
     }
 
-    function submitShare(bytes64 newSignerPubKey, bytes64 share) {
+    function submitShare(bytes32 newSignerPubKey, bytes32 share) public {
         shareGenerationFractions[newSignerPubKey].push(share);
     }
 
-    function getPubKey() public view return (bytes32) {
+    function getPubKey() public view returns (bytes32) {
         return pubKey;
     }
 }
