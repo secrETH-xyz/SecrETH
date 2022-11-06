@@ -393,8 +393,10 @@ async function _submitPartialDecrypion(signerIndex, cipher, partialDecryptionX, 
 // ===========================================================================
 
 async function test() {
-    // await _register("trialCipher");
-    // await _decrypt("trialCipher");
+    await _register("trialCipher");
+    await _decrypt("trialCipher");
+    await _submitPartialDecrypion(0, "trialCipher", "trial", "trial", "trial");
+    await _submitPartialDecrypion(1, "trialCipher", "trial", "trial", "trial");
     await _submitPartialDecrypion(2, "trialCipher", "trial", "trial", "trial");
 }
 
