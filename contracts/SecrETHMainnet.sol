@@ -161,7 +161,6 @@ contract SecrETH {
                     )
                 );
             }
-            }
         }
     }
 
@@ -198,7 +197,7 @@ contract SecrETH {
                             )
                         )
                     )
-        );
+            );
     }
 
     function submitShare(bytes32 newSignerPubKey, bytes32 share) public {
