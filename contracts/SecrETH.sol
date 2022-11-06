@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.17;
 
+import "hardhat/console.sol";
+
 contract SecrETH {
     
     // public key of our contract
@@ -45,20 +47,23 @@ contract SecrETH {
     event DecryptionReadyIncentivized(string cipher, uint256 storageFee);
     event JoinNetworkRequest(bytes32 newSignerPubKey);
 
-    constructor(address[] memory initialSigners, bytes32 _pubKey, uint32 _threshold, uint32 _numSigners, uint32 _blocksDelay, uint32 _generalFee) {
+    constructor(address[] memory initialSigners, bytes32 _pubKey, uint32 _threshold, uint32 _blocksDelay, uint32 _generalFee) {
         for (uint i = 0; i < initialSigners.length; i++){
             isSigner[initialSigners[i]] = true;
         }
         pubKey = _pubKey;
         threshold = _threshold;
-        numSigners = _numSigners;
+        numSigners = uint32(initialSigners.length);
         blocksDelay = _blocksDelay;
         generalFee = _generalFee;
     }
 
     function register(string calldata cipher) payable public {
+        console.log("Registration called");
         require (allCiphers[cipher].cipherOwner == address(0), "This ciphertext is already registered. Try using another salt.");
-        require (msg.value >= generalFee);
+        console.log("Value: ", msg.value);
+        console.log("Fee: ", generalFee);
+        require (msg.value >= generalFee, "msg.value was not enough to cover the fee.");
         allCiphers[cipher].cipherOwner = msg.sender;
     }
 
@@ -80,7 +85,9 @@ contract SecrETH {
             require (allCiphers[cipher].decryptionSigners[i] != msg.sender, "This address aleready provided their partial decryption.");
         }
 
+        console.log(address(this).balance);
         payable(msg.sender).transfer(generalFee / numSigners);
+        // payable(msg.sender).transfer(generalFee / numSigners);
 
         PartialDecryption memory newPartialDecryption;
         newPartialDecryption = PartialDecryption(partialDecryptionX, partialDecryptionC1_x, partialDecryptionC1_y);
