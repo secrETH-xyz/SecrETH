@@ -7,7 +7,7 @@ interface IPUSHCommInterface {
     function sendNotification(address _channel, address _recipient, bytes calldata _identity) external;
 }
 
-contract SecrETH {
+contract SecrETHMainnet {
     
     // public key of our contract
     bytes32 private pubKey;
