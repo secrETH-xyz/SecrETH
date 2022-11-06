@@ -367,14 +367,14 @@ var SecrETH = new ethers.Contract(contractAddress, abi, provider.getSigner());
 // =============================================================================
 
 async function _register(userAddress, cipher) {
-  let userAddress = userAddress.toLowerCase();
-	let SecrETH = await SecrETH.connect(provider.getSigner(userAddress));
+  userAddress = userAddress.toLowerCase();
+	SecrETH = await SecrETH.connect(provider.getSigner(userAddress));
   await SecrETH.register(cipher, {value: 1000, gasLimit: 3e7});
 }
 
 async function _submitPartialDecrypion(signerAddress, cipher, partialDecryptionX, partialDecryptionC1_x, partialDecryptionC1_y) {
-	let signerAddress = signerAddress.toLowerCase();
-	let SecrETH = await SecrETH.connect(provider.getSigner(signerAddress));
+	signerAddress = signerAddress.toLowerCase();
+	SecrETH = await SecrETH.connect(provider.getSigner(signerAddress));
   await SecrETH.submitPartialDecryption(cipher, partialDecryptionX, partialDecryptionC1_x, partialDecryptionC1_y, {gasLimit: 3e7});
 }
 
