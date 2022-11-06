@@ -7,7 +7,7 @@ interface IPUSHCommInterface {
     function sendNotification(address _channel, address _recipient, bytes calldata _identity) external;
 }
 
-contract SecrETHMainnet {
+contract SecrETHGoerli {
     
     // public key of our contract
     bytes32 private pubKey;
@@ -71,7 +71,7 @@ contract SecrETHMainnet {
         require (allCiphers[cipher].cipherOwner == msg.sender, "This address is not allowed to decrypt this ciphertext.");
         emit DecryptionCalled(cipher, shouldStoreDecryption);
 
-        // send push notification to signers (TODO: after deployment add the contract address as delegate for your channel)
+        // Send push notification to signers (TODO: after deployment add the contract address as delegate for your channel)
         IPUSHCommInterface(0xd4E3ceC407cD36d9e3767cD189ccCaFBF549202C).sendNotification(
             0x8248Bf189C9Ef0523288eab176febF8f1EC05842,
             address(this), // to recipient, put address(this) in case you want Broadcast or Subset. For Targetted put the address to which you want to send

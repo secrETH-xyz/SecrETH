@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
   "contractName": "IPUSHCommInterface",
-  "sourceName": "contracts/SecrETHMainnet.sol",
+  "sourceName": "contracts/SecrETHGoerli.sol",
   "abi": [
     {
       "inputs": [

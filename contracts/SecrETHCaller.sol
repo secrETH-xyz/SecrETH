@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-import './SecrETH.sol';
+import './SecrETHL2s.sol';
 
 contract SecrETHCaller {
     
@@ -10,12 +10,12 @@ contract SecrETHCaller {
 
     uint32 public locktime; // in block number
 
-    SecrETH secrETH;
+    SecrETHL2s secrETH;
 
     constructor(string memory _ourCipher, uint32 _locktime, address secrETHAddress) {
         ourCipher = _ourCipher;
         locktime = _locktime;
-        secrETH = SecrETH(secrETHAddress);
+        secrETH = SecrETHL2s(secrETHAddress);
     }
 
     function callDecryption() public {

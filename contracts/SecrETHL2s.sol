@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-contract SecrETH {
+contract SecrETHL2s {
     
     // public key of our contract
     bytes32 private pubKey;

@@ -362,29 +362,29 @@ var abi = [
   }
 ];
 
-var contractAddress = "0xB3d7a60D1803BBC62EA0fe5dD993384b79E4F039";
+var contractAddress = "0x060cAb4AF8690079Be076a245c9C9c1021c6FA9f";
 
-var SecrETH = new ethers.Contract(contractAddress, abi, user);
+var SecrETHGoerli = new ethers.Contract(contractAddress, abi, user);
 
 // =============================================================================
 //                                 UI Functions
 // =============================================================================
 
 async function _register(cipher) {
-  SecrETH = await SecrETH.connect(user);
-  x = await SecrETH.register(cipher, {value: 1000, gasPrice: 2e9, gasLimit: 1e5});
+  SecrETHGoerli = await SecrETHGoerli.connect(user);
+  x = await SecrETHGoerli.register(cipher, {value: 1000, gasPrice: 2e9, gasLimit: 1e5});
   console.log(x)
 }
 
 async function _decrypt(cipher) {
-  SecrETH = await SecrETH.connect(user);
-  x = await SecrETH.decrypt(cipher, false, {gasPrice: 2e9, gasLimit: 1e5});
+  SecrETHGoerli = await SecrETHGoerli.connect(user);
+  x = await SecrETHGoerli.decrypt(cipher, false, {gasPrice: 2e9, gasLimit: 1e5});
   console.log(x)
 }
 
 async function _submitPartialDecrypion(signerIndex, cipher, partialDecryptionX, partialDecryptionC1_x, partialDecryptionC1_y) {
-    SecrETH = await SecrETH.connect(signers[signerIndex]);
-    x = await SecrETH.submitPartialDecryption(cipher, partialDecryptionX, partialDecryptionC1_x, partialDecryptionC1_y, {gasPrice: 2e9, gasLimit: 5e5});
+  SecrETHGoerli = await SecrETHGoerli.connect(signers[signerIndex]);
+    x = await SecrETHGoerli.submitPartialDecryption(cipher, partialDecryptionX, partialDecryptionC1_x, partialDecryptionC1_y, {gasPrice: 2e9, gasLimit: 5e5});
     console.log(x)
 }
 
@@ -395,7 +395,7 @@ async function _submitPartialDecrypion(signerIndex, cipher, partialDecryptionX, 
 async function test() {
     // await _register("trialCipher");
     // await _decrypt("trialCipher");
-    await _submitPartialDecrypion(1, "trialCipher", "trial", "trial", "trial");
+    await _submitPartialDecrypion(2, "trialCipher", "trial", "trial", "trial");
 }
 
 test();
