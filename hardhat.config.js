@@ -10,7 +10,7 @@ module.exports = {
   solidity: "0.8.17",
   networks: {
     goerli: {
-      url: `https://goerli.prylabs.net`,
+      url: `https://rpc.ankr.com/eth_goerli`,
       accounts: [GOERLI_PRIVATE_KEY]
     }
   }
