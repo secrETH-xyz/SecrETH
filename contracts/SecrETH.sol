@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.17;
 
-import "hardhat/console.sol";
-
 contract SecrETH {
     
     // public key of our contract
@@ -59,10 +57,7 @@ contract SecrETH {
     }
 
     function register(string calldata cipher) payable public {
-        console.log("Registration called");
         require (allCiphers[cipher].cipherOwner == address(0), "This ciphertext is already registered. Try using another salt.");
-        console.log("Value: ", msg.value);
-        console.log("Fee: ", generalFee);
         require (msg.value >= generalFee, "msg.value was not enough to cover the fee.");
         allCiphers[cipher].cipherOwner = msg.sender;
     }
@@ -85,9 +80,7 @@ contract SecrETH {
             require (allCiphers[cipher].decryptionSigners[i] != msg.sender, "This address aleready provided their partial decryption.");
         }
 
-        console.log(address(this).balance);
         payable(msg.sender).transfer(generalFee / numSigners);
-        // payable(msg.sender).transfer(generalFee / numSigners);
 
         PartialDecryption memory newPartialDecryption;
         newPartialDecryption = PartialDecryption(partialDecryptionX, partialDecryptionC1_x, partialDecryptionC1_y);
