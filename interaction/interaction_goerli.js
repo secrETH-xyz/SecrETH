@@ -7,7 +7,7 @@ const { ethers } = require("hardhat");
 require('dotenv').config({ path: __dirname + '/process.env' });
 const provider = new ethers.providers.JsonRpcProvider(process.env.GOERLI_URL);
 const user = new Wallet(process.env.USER_KEY, provider)
-const signers = [new Wallet(process.env.SIGNER_1_KEY, provider), new Wallet(process.env.SIGNER_2_KEY, provider), new Wallet(process.env.SIGNER_3_KEY, provider)]
+const signers = [new Wallet(process.env.SIGNER_0_KEY, provider), new Wallet(process.env.SIGNER_1_KEY, provider), new Wallet(process.env.SIGNER_2_KEY, provider)]
 
 var abi = [
   {
@@ -393,9 +393,11 @@ async function _submitPartialDecrypion(signerIndex, cipher, partialDecryptionX, 
 // ===========================================================================
 
 async function test() {
-    // await _register("trialCipher");
-    // await _decrypt("trialCipher");
-    await _submitPartialDecrypion(2, "trialCipher", "trial", "trial", "trial");
+  await _register("trialCipher");
+  await _decrypt("trialCipher");
+  await _submitPartialDecrypion(0, "trialCipher", "trial", "trial", "trial");
+  await _submitPartialDecrypion(1, "trialCipher", "trial", "trial", "trial");
+  await _submitPartialDecrypion(2, "trialCipher", "trial", "trial", "trial");
 }
 
 test();

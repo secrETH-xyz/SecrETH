@@ -13,19 +13,40 @@ require("@nomiclabs/hardhat-waffle");
 module.exports = {
   solidity: "0.8.17",
   networks: {
+    'matic': {
+      url: "https://rpc-mumbai.maticvigil.com",
+      accounts: [
+          process.env.USER_KEY,
+          process.env.SIGNER_0_KEY,
+          process.env.SIGNER_1_KEY,
+          process.env.SIGNER_2_KEY 
+      ]
+    },
+    'optimism-goerli': {
+      url: "https://goerli.optimism.io",
+      accounts: [
+          process.env.USER_KEY,
+          process.env.SIGNER_0_KEY,
+          process.env.SIGNER_1_KEY,
+          process.env.SIGNER_2_KEY 
+      ]
+    },
     // skale: {
     //   url: "https://eth-sf.skalenodes.com/v1/hackathon-complex-easy-naos",
     //   accounts: [process.env.SK]
     // },
-    goerli: {
-      url: process.env.GOERLI_URL,
-      accounts: [
-          process.env.USER_KEY,
-          process.env.SIGNER_1_KEY,
-          process.env.SIGNER_2_KEY,
-          process.env.SIGNER_3_KEY
+    // goerli: {
+    //   url: process.env.GOERLI_URL,
+    //   accounts: [
+    //       process.env.USER_KEY,
+    //       process.env.SIGNER_0_KEY,
+    //       process.env.SIGNER_1_KEY,
+    //       process.env.SIGNER_2_KEY
         
-      ]
-    }
+    //   ]
+    // }
+  },
+  etherscan: {
+    apiKey: process.env.POLYGONSCAN_API_KEY
   }
 };
