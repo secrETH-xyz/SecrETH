@@ -75,6 +75,7 @@ contract SecrETH {
 
     function submitPartialDecryption (string calldata cipher, string calldata partialDecryptionX, string calldata partialDecryptionC1_x, string calldata partialDecryptionC1_y) public {
         require (isSigner[msg.sender], "This address is not a secrETH signer.");
+        require (allCiphers[cipher].decryptionInitBlock != 0, "The corresponding contract did not asked for cihper secret to be decrypted.");
         require (block.number <= allCiphers[cipher].decryptionInitBlock + blocksDelay, "The time to submit a partial decryption has passed.");
         for (uint i = 0; i < allCiphers[cipher].decryptionSigners.length; i++) {
             require (allCiphers[cipher].decryptionSigners[i] != msg.sender, "This address aleready provided their partial decryption.");
